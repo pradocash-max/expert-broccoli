@@ -1,0 +1,212 @@
+<!-- login.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pink Chat - Login</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .hink {
+            color: pink;
+            font-family: monospace;
+            white-space: pre;
+            margin-bottom: 30px;
+        }
+
+        .auth-container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .form-container {
+            margin-bottom: 20px;
+        }
+
+        h2 {
+            color: #333;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            background: pink;
+            border: none;
+            border-radius: 4px;
+            color: white;
+            cursor: pointer;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+
+        button:hover {
+            background: #ff9eaf;
+        }
+
+        .error-message {
+            color: red;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .success-message {
+            color: green;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="hink">
+        /$$       /$$           /$$                       /$$                   /$$    
+        | $$      |__/          | $$                      | $$                  | $$    
+        | $$$$$$$  /$$ /$$$$$$$ | $$   /$$        /$$$$$$$| $$$$$$$   /$$$$$$  /$$$$$$  
+        | $$__  $$| $$| $$__  $$| $$  /$$/       /$$_____/| $$__  $$ |____  $$|_  $$_/  
+        | $$  \ $$| $$| $$  \ $$| $$$$$$/       | $$      | $$  \ $$  /$$$$$$$  | $$    
+        | $$  | $$| $$| $$  | $$| $$_  $$       | $$      | $$  | $$ /$$__  $$  | $$ /$$
+        | $$  | $$| $$| $$  | $$| $$ \  $$      |  $$$$$$$| $$  | $$|  $$$$$$$  |  $$$$/
+        |__/  |__/|__/|__/  |__/|__/  \__//$$$$$$\_______/|__/  |__/ \_______/   \___/  
+                                        |______/                                       
+    </div>
+
+    <div class="auth-container">
+        <div id="login-form" class="form-container">
+            <h2>Login</h2>
+            <div id="login-error" class="error-message"></div>
+            <input type="text" id="login-username" placeholder="Username" required>
+            <input type="password" id="login-password" placeholder="Password" required>
+            <button onclick="login()">Login</button>
+            <button onclick="showRegister()" style="background: #f0f0f0; color: #333;">Register Instead</button>
+        </div>
+
+        <div id="register-form" class="form-container" style="display: none;">
+            <h2>Register</h2>
+            <div id="register-error" class="error-message"></div>
+            <div id="register-success" class="success-message"></div>
+            <input type="text" id="register-username" placeholder="Username" required>
+            <input type="password" id="register-password" placeholder="Password" required>
+            <input type="password" id="register-confirm-password" placeholder="Confirm Password" required>
+            <button onclick="register()">Register</button>
+            <button onclick="showLogin()" style="background: #f0f0f0; color: #333;">Login Instead</button>
+        </div>
+    </div>
+
+    <script>
+        // Replace with your backend URL when deploying
+        const API_URL = 'http://your-backend-url';
+
+        function showLogin() {
+            document.getElementById('login-form').style.display = 'block';
+            document.getElementById('register-form').style.display = 'none';
+            clearMessages();
+        }
+
+        function showRegister() {
+            document.getElementById('login-form').style.display = 'none';
+            document.getElementById('register-form').style.display = 'block';
+            clearMessages();
+        }
+
+        function clearMessages() {
+            document.getElementById('login-error').textContent = '';
+            document.getElementById('register-error').textContent = '';
+            document.getElementById('register-success').textContent = '';
+        }
+
+        async function login() {
+            const username = document.getElementById('login-username').value;
+            const password = document.getElementById('login-password').value;
+
+            try {
+                const response = await fetch(`${API_URL}/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify({ username, password }),
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    // Store token if your backend uses JWT
+                    if (data.token) {
+                        localStorage.setItem('chatToken', data.token);
+                    }
+                    window.location.href = '/chat.html';
+                } else {
+                    document.getElementById('login-error').textContent = data.message || 'Login failed';
+                }
+            } catch (error) {
+                document.getElementById('login-error').textContent = 'Connection error. Please try again.';
+            }
+        }
+
+        async function register() {
+            const username = document.getElementById('register-username').value;
+            const password = document.getElementById('register-password').value;
+            const confirmPassword = document.getElementById('register-confirm-password').value;
+
+            if (password !== confirmPassword) {
+                document.getElementById('register-error').textContent = 'Passwords do not match';
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_URL}/register`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ username, password }),
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    document.getElementById('register-success').textContent = 'Registration successful! Please login.';
+                    setTimeout(showLogin, 2000);
+                } else {
+                    document.getElementById('register-error').textContent = data.message || 'Registration failed';
+                }
+            } catch (error) {
+                document.getElementById('register-error').textContent = 'Connection error. Please try again.';
+            }
+        }
+
+        // Handle enter key
+        document.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                if (document.getElementById('login-form').style.display !== 'none') {
+                    login();
+                } else {
+                    register();
+                }
+            }
+        });
+    </script>
+</body>
+</html>
